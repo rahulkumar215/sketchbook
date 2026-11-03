@@ -54,3 +54,15 @@ model DrawingFile {
   @@id([drawingId, id])
   @@map("drawing_files")
 }
+
+/// A shape library added from libraries.excalidraw.com ("Browse libraries"
+/// in the editor). Only its URL is stored: the browser fetches the library
+/// itself, so it costs no database space or transfer.
+model ShapeLibrary {
+  id        String   @id @default(uuid()) @db.Uuid
+  url       String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("shape_libraries")
+}

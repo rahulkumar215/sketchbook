@@ -64,6 +64,14 @@ export type GalleryImage = {
   createdAt: string;
 };
 
+/** A shape library added with "Browse libraries" (only its URL is stored). */
+export type AddedShapeLibrary = {
+  id: string;
+  url: string;
+  name: string;
+  createdAt: string;
+};
+
 /** URL that serves an image's raw bytes, for <img src>. */
 export function imageSrc(image: Pick<GalleryImage, "drawingId" | "fileId">) {
   return `/api/images/${image.drawingId}/${encodeURIComponent(image.fileId)}`;

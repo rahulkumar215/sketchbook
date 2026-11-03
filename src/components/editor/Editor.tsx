@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { EditorHeader } from "./EditorHeader";
 import { EditorSpinner } from "./EditorSpinner";
 import { useAutosave } from "./useAutosave";
-import { useBundledLibraries } from "./useBundledLibraries";
+import { useShapeLibraries } from "./useShapeLibraries";
 import { useStoredImages } from "./useStoredImages";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,7 @@ function Canvas({ scene }: { scene: DrawingScene }) {
   const autosave = useAutosave(scene.id, scene.fileIds);
   const initialData = useMemo(() => toInitialData(scene), [scene]);
   useStoredImages(api, scene.id, scene.fileIds);
-  const loadLibrariesIfOpen = useBundledLibraries(api);
+  const loadLibrariesIfOpen = useShapeLibraries(api);
 
   function handleChange(
     elements: readonly ExcalidrawElement[],

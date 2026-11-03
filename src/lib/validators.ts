@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAllowedLibraryUrl } from "@/lib/shape-libraries";
 
 /** Vercel rejects request bodies over 4.5 MB; stay safely under it. */
 export const MAX_FILE_DATA_URL_CHARS = 4_000_000;
@@ -67,6 +68,16 @@ export const uploadFileSchema = z.object({
     .string()
     .max(MAX_FILE_DATA_URL_CHARS)
     .regex(/^data:image\/[a-z0-9+.-]+;base64,/),
+});
+
+export const addShapeLibrarySchema = z.object({
+  url: z
+    .string()
+    .max(500)
+    .refine(
+      isAllowedLibraryUrl,
+      "Only libraries from libraries.excalidraw.com can be added",
+    ),
 });
 
 /* ---- Form schemas (browser, react-hook-form) ---- */
