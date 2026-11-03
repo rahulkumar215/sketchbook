@@ -1,0 +1,48 @@
+name: Bug report
+description: Something doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! For a **security** problem, please don't use this
+        form; report it privately as described in SECURITY.md.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a drawing
+        2. Drag it onto a folder
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where are you running it?
+      options:
+        - Vercel + Neon
+        - Locally (npm run dev)
+        - Self-hosted elsewhere
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: e.g. Chrome 140 on Windows, Safari on iPhone
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors or screenshots
+      description: >-
+        Browser console errors, server logs or screenshots. Remove passwords,
+        secrets and database URLs before pasting.
