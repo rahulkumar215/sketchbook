@@ -1,7 +1,8 @@
 "use client";
 
 import { ImageOff, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { ImageGrid } from "./image-grid";
 import type { ImageItem } from "./image-tile";
 import { ImageViewer } from "./image-viewer";
@@ -23,8 +24,9 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { toErrorMessage } from "@/lib/client-api";
 import { ALL, filterDrawings, tagCounts } from "@/lib/library-filter";
+import { imagesQuery } from "@/lib/queries";
 import type { GalleryImage } from "@/lib/types";
 
 type Load =
@@ -32,22 +34,13 @@ type Load =
   | { status: "error"; message: string }
   | { status: "ready"; images: GalleryImage[] };
 
+const NO_IMAGES: GalleryImage[] = [];
+
 function useGalleryImages(): Load {
-  const [load, setLoad] = useState<Load>({ status: "loading" });
-  useEffect(() => {
-    let active = true;
-    apiFetch<GalleryImage[]>("/api/images")
-      .then((images) => {
-        if (active) setLoad({ status: "ready", images });
-      })
-      .catch((e: unknown) => {
-        if (active) setLoad({ status: "error", message: toErrorMessage(e) });
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-  return load;
+  const { data, error } = useQuery(imagesQuery);
+  if (data) return { status: "ready", images: data };
+  if (error) return { status: "error", message: toErrorMessage(error) };
+  return { status: "loading" };
 }
 
 function LoadingGrid() {
@@ -93,10 +86,9 @@ export function ImagesPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [viewing, setViewing] = useState<number | null>(null);
 
-  const images = useMemo(
-    () => (load.status === "ready" ? load.images : []),
-    [load],
-  );
+  // The query's array is stable between renders, so the memos below only
+  // recompute when the images actually change.
+  const images = load.status === "ready" ? load.images : NO_IMAGES;
 
   // Only offer tags of drawings that actually hold images.
   const tagList = useMemo(() => {

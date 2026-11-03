@@ -1,7 +1,7 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, TriangleAlert } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 import { BreakdownChart } from "./breakdown-chart";
 import { GrowthChart } from "./growth-chart";
 import { LargestDrawingsChart } from "./largest-drawings-chart";
@@ -12,7 +12,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
-import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { toErrorMessage } from "@/lib/client-api";
+import { usageQuery } from "@/lib/queries";
 import type { UsageData } from "@/lib/types";
 
 function DashboardSkeleton() {
@@ -44,35 +45,9 @@ function Dashboard({ data }: { data: UsageData }) {
 }
 
 export function UsagePage() {
-  const [data, setData] = useState<UsageData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      setData(await apiFetch<UsageData>("/api/usage"));
-      setError(null);
-    } catch (e) {
-      setError(toErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    apiFetch<UsageData>("/api/usage")
-      .then((usage) => {
-        if (active) setData(usage);
-      })
-      .catch((e: unknown) => {
-        if (active) setError(toErrorMessage(e));
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data, error, isFetching, refetch } = useQuery(usageQuery);
+  // With data on screen, a failed refresh is a toast (see query-client).
+  const failed = !data && error ? toErrorMessage(error) : null;
 
   return (
     <>
@@ -82,10 +57,10 @@ export function UsagePage() {
         actions={
           <Button
             variant="outline"
-            onClick={() => void load()}
-            disabled={loading}
+            onClick={() => void refetch()}
+            disabled={isFetching}
           >
-            {loading ? (
+            {isFetching ? (
               <Spinner data-icon="inline-start" />
             ) : (
               <RefreshCw data-icon="inline-start" />
@@ -95,15 +70,15 @@ export function UsagePage() {
         }
       />
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {error ? (
+        {failed ? (
           <Alert variant="destructive">
             <TriangleAlert />
             <AlertTitle>Couldn&rsquo;t load usage</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{failed}</AlertDescription>
           </Alert>
         ) : null}
         {data ? <Dashboard data={data} /> : null}
-        {!data && !error ? <DashboardSkeleton /> : null}
+        {!data && !failed ? <DashboardSkeleton /> : null}
       </div>
     </>
   );

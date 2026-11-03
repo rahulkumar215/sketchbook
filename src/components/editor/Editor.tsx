@@ -9,11 +9,12 @@ import type {
   ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
 } from "@excalidraw/excalidraw/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EditorHeader } from "./EditorHeader";
 import { EditorSpinner } from "./EditorSpinner";
@@ -30,6 +31,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { drawingQuery, invalidateDrawingLists } from "@/lib/queries";
 import type { DrawingScene } from "@/lib/types";
 
 /** Saved scene -> Excalidraw's initialData (data came from Excalidraw). */
@@ -44,6 +46,7 @@ function toInitialData(scene: DrawingScene): ExcalidrawInitialDataState {
 
 function Canvas({ scene }: { scene: DrawingScene }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { resolvedTheme } = useTheme();
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const autosave = useAutosave(scene.id, scene.fileIds);
@@ -69,9 +72,11 @@ function Canvas({ scene }: { scene: DrawingScene }) {
     apiFetch(`/api/drawings/${scene.id}`, {
       method: "PATCH",
       json: { title },
-    }).catch((e: unknown) =>
-      toast.error(`Title not saved: ${toErrorMessage(e)}`),
-    );
+    })
+      .then(() => invalidateDrawingLists(queryClient))
+      .catch((e: unknown) =>
+        toast.error(`Title not saved: ${toErrorMessage(e)}`),
+      );
   }
 
   return (
@@ -118,16 +123,9 @@ function OpenError({ message }: { message: string }) {
 }
 
 export default function Editor({ id }: { id: string }) {
-  const [scene, setScene] = useState<DrawingScene | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data: scene, error } = useQuery(drawingQuery(id));
 
-  useEffect(() => {
-    apiFetch<DrawingScene>(`/api/drawings/${id}`)
-      .then(setScene)
-      .catch((e: unknown) => setError(toErrorMessage(e)));
-  }, [id]);
-
-  if (error) return <OpenError message={error} />;
-  if (!scene) return <EditorSpinner label="Opening drawing" />;
-  return <Canvas scene={scene} />;
+  if (scene) return <Canvas scene={scene} />;
+  if (error) return <OpenError message={toErrorMessage(error)} />;
+  return <EditorSpinner label="Opening drawing" />;
 }

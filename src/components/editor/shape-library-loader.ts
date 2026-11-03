@@ -6,8 +6,8 @@ import {
 } from "@excalidraw/excalidraw";
 import type { LibraryItem } from "@excalidraw/excalidraw/types";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/client-api";
-import type { AddedShapeLibrary } from "@/lib/types";
+import { shapeLibrariesQuery } from "@/lib/queries";
+import { getQueryClient } from "@/lib/query-client";
 
 /** One library file from libraries.excalidraw.com. */
 export async function fetchLibrary(url: string): Promise<LibraryItem[]> {
@@ -20,9 +20,8 @@ export async function fetchLibrary(url: string): Promise<LibraryItem[]> {
 /** URLs of the libraries saved in the database (none if that fails). */
 async function allLibraryUrls(): Promise<string[]> {
   try {
-    const libraries = await apiFetch<AddedShapeLibrary[]>(
-      "/api/shape-libraries",
-    );
+    // Shared with the Shape libraries page: reused while fresh.
+    const libraries = await getQueryClient().fetchQuery(shapeLibrariesQuery);
     return libraries.map((library) => library.url);
   } catch (error) {
     console.error("Shape library list failed to load", error);

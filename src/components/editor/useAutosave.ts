@@ -7,6 +7,7 @@ import type {
   BinaryFileData,
   BinaryFiles,
 } from "@excalidraw/excalidraw/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { compressImage } from "./compress-image";
 import {
@@ -16,6 +17,7 @@ import {
   settingsKey,
 } from "./scene";
 import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { invalidateDrawingLists } from "@/lib/queries";
 
 export type SaveStatus = "saved" | "pending" | "saving" | "error";
 
@@ -42,6 +44,7 @@ async function uploadImage(drawingId: string, file: BinaryFileData) {
  * server-side. A failed save is retried on the next edit or via `flush`.
  */
 export function useAutosave(drawingId: string, initialFileIds: string[]) {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<SaveStatus>("saved");
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<Snapshot | null>(null);
@@ -76,6 +79,9 @@ export function useAutosave(drawingId: string, initialFileIds: string[]) {
           [...uploaded.current].filter((id) => fileIds.has(id)),
         );
         lastFingerprint.current = snap.fingerprint;
+        // The library's "edited" time, order and images are now out of
+        // date. Nothing is fetched here: those screens refetch when shown.
+        void invalidateDrawingLists(queryClient);
         setError(null);
         setStatus(pending.current ? "pending" : "saved");
       } catch (e) {
@@ -84,7 +90,7 @@ export function useAutosave(drawingId: string, initialFileIds: string[]) {
         setStatus("error");
       }
     },
-    [drawingId],
+    [drawingId, queryClient],
   );
 
   const flush = useCallback(async () => {

@@ -1,18 +1,18 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { toErrorMessage } from "@/lib/client-api";
 import { buildFolderTree, type FolderNode } from "@/lib/folder-tree";
-import type { LibraryData, LibraryDrawing, LibraryFolder } from "@/lib/types";
+import { invalidateDrawingLists, libraryQuery } from "@/lib/queries";
+import type { LibraryDrawing, LibraryFolder } from "@/lib/types";
 
 type LibraryContextValue = {
   loaded: boolean;
@@ -26,45 +26,30 @@ type LibraryContextValue = {
 
 const LibraryContext = createContext<LibraryContextValue | null>(null);
 
-function fetchLibrary() {
-  return apiFetch<LibraryData>("/api/library");
-}
-
 /** Folders + drawings, shared by the sidebar and every page beside it. */
 export function LibraryProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<LibraryData | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    fetchLibrary()
-      .then((library) => {
-        if (active) setData(library);
-      })
-      .catch((e: unknown) => toast.error(toErrorMessage(e)));
-    return () => {
-      active = false;
-    };
-  }, []);
+  const queryClient = useQueryClient();
+  const { data } = useQuery(libraryQuery);
 
   const run = useCallback(
     async (action: () => Promise<unknown>, success?: string) => {
       try {
         await action();
         if (success) toast.success(success);
-        setData(await fetchLibrary());
+        await invalidateDrawingLists(queryClient);
         return true;
       } catch (e) {
         toast.error(toErrorMessage(e));
         return false;
       }
     },
-    [],
+    [queryClient],
   );
 
   const value = useMemo<LibraryContextValue>(() => {
     const folders = data?.folders ?? [];
     return {
-      loaded: data !== null,
+      loaded: data !== undefined,
       folders,
       drawings: data?.drawings ?? [],
       tree: buildFolderTree(folders),

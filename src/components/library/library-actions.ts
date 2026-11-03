@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useLibrary } from "./library-context";
 import { apiFetch } from "@/lib/client-api";
@@ -11,6 +12,7 @@ const json = (method: string, body?: unknown) => ({ method, json: body });
 /** Every write the library can make, as named handlers. */
 export function useLibraryActions() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { run } = useLibrary();
 
   return {
@@ -64,6 +66,7 @@ export function useLibraryActions() {
       ),
     logout: async () => {
       await apiFetch("/api/logout", json("POST"));
+      queryClient.clear();
       router.replace("/login");
     },
   };

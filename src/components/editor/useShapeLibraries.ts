@@ -12,6 +12,8 @@ import {
   takeLibraryUrlFromHash,
 } from "./shape-library-loader";
 import { apiFetch, toErrorMessage } from "@/lib/client-api";
+import { shapeLibrariesQuery } from "@/lib/queries";
+import { getQueryClient } from "@/lib/query-client";
 import { isAllowedLibraryUrl, libraryNameFromUrl } from "@/lib/shape-libraries";
 
 type Api = ExcalidrawImperativeAPI;
@@ -47,6 +49,9 @@ async function addLibrary(api: Api, url: string) {
       apiFetch("/api/shape-libraries", { method: "POST", json: { url } }),
       mergeLibrary(api, url, true),
     ]);
+    void getQueryClient().invalidateQueries({
+      queryKey: shapeLibrariesQuery.queryKey,
+    });
     announceToOtherTabs(url);
     toast.success(`Added "${name}" to every drawing`);
   } catch (error) {
