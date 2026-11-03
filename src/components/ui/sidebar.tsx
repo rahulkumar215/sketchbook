@@ -358,7 +358,12 @@ function SidebarSeparator({
     <Separator
       data-slot="sidebar-separator"
       data-sidebar="separator"
-      className={cn("mx-2 w-auto bg-sidebar-border", className)}
+      className={cn(
+        // data-horizontal: so it beats Separator's data-horizontal:w-full;
+        // a plain w-auto loses and the line overflows its mx-2 by 16px.
+        "mx-2 bg-sidebar-border data-horizontal:w-auto",
+        className,
+      )}
       {...props}
     />
   );
