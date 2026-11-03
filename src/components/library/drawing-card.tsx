@@ -59,7 +59,8 @@ function FolderChip({ folderId, label }: { folderId: string; label: string }) {
         title={`Open folder ${label}`}
         draggable={false}
       >
-        <Folder data-icon="inline-start" />
+        {/* shrink-0: a long, truncating path squashed the icon */}
+        <Folder data-icon="inline-start" className="shrink-0" />
         <span className="truncate">{label}</span>
       </Link>
     </Badge>
