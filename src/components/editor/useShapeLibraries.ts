@@ -92,10 +92,9 @@ function isLibraryOpen(appState: AppState): boolean {
 }
 
 /**
- * The Library panel's contents: bundled libraries plus the ones added with
- * "Browse libraries", loaded the first time the panel opens (drawings that
- * never use it download nothing). Returns a handler for Excalidraw's
- * onChange.
+ * The Library panel's contents: every library saved in `shape_libraries`,
+ * loaded the first time the panel opens (drawings that never use it
+ * download nothing). Returns a handler for Excalidraw's onChange.
  */
 export function useShapeLibraries(api: Api | null) {
   const loaded = useRef(false);

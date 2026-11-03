@@ -19,10 +19,9 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Static icons/logo/manifest stay public so the login page can show them;
-  // the bundled shape libraries (public, MIT) skip the auth check too.
+  // Static icons/logo/manifest stay public so the login page can show them.
   // (Drawing images are served by /api, which stays protected.)
   matcher: [
-    "/((?!_next/static|_next/image|libraries/|.*\\.(?:ico|png|svg|webmanifest)$).*)",
+    "/((?!_next/static|_next/image|.*\\.(?:ico|png|svg|webmanifest)$).*)",
   ],
 };

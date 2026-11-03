@@ -7,10 +7,9 @@ import {
 import type { LibraryItem } from "@excalidraw/excalidraw/types";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/client-api";
-import { BUNDLED_LIBRARIES, bundledLibraryUrl } from "@/lib/shape-libraries";
 import type { AddedShapeLibrary } from "@/lib/types";
 
-/** One library file (bundled or from libraries.excalidraw.com). */
+/** One library file from libraries.excalidraw.com. */
 export async function fetchLibrary(url: string): Promise<LibraryItem[]> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
@@ -18,16 +17,17 @@ export async function fetchLibrary(url: string): Promise<LibraryItem[]> {
   return loadLibraryFromBlob(await res.blob(), "published");
 }
 
-/** Bundled libraries plus the ones added with "Browse libraries". */
+/** URLs of the libraries saved in the database (none if that fails). */
 async function allLibraryUrls(): Promise<string[]> {
-  const bundled = BUNDLED_LIBRARIES.map(bundledLibraryUrl);
   try {
-    const added = await apiFetch<AddedShapeLibrary[]>("/api/shape-libraries");
-    return [...bundled, ...added.map((library) => library.url)];
+    const libraries = await apiFetch<AddedShapeLibrary[]>(
+      "/api/shape-libraries",
+    );
+    return libraries.map((library) => library.url);
   } catch (error) {
-    console.error("Added shape libraries failed to load", error);
-    toast.error("Your added libraries couldn't be loaded");
-    return bundled;
+    console.error("Shape library list failed to load", error);
+    toast.error("Your shape libraries couldn't be loaded");
+    return [];
   }
 }
 

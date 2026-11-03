@@ -15,10 +15,10 @@ function toJson(row: {
   return { ...row, createdAt: row.createdAt.toISOString() };
 }
 
-/** Libraries added with "Browse libraries", oldest first. */
+/** Saved libraries, oldest first (the seeded defaults share a timestamp). */
 export const GET = withAuth(async () => {
   const rows = await db().shapeLibrary.findMany({
-    orderBy: { createdAt: "asc" },
+    orderBy: [{ createdAt: "asc" }, { name: "asc" }],
     select,
   });
   return Response.json(rows.map(toJson));

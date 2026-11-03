@@ -1,6 +1,13 @@
 "use client";
 
-import { ChartPie, Images, Inbox, Layers, type LucideIcon } from "lucide-react";
+import {
+  ChartPie,
+  Images,
+  Inbox,
+  Layers,
+  Shapes,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -83,6 +90,20 @@ export function NavMain() {
               <Link href="/images" onClick={() => setOpenMobile(false)}>
                 <Images />
                 <span>Images</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === "/shape-libraries"}
+            >
+              <Link
+                href="/shape-libraries"
+                onClick={() => setOpenMobile(false)}
+              >
+                <Shapes />
+                <span>Shape libraries</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

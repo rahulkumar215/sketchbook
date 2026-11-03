@@ -1,41 +1,12 @@
 /**
  * Excalidraw shape libraries shown in every drawing's Library panel.
  *
- * Two kinds, both fetched by the browser (never stored in the database):
- * - Bundled: shipped in `public/libraries/<name>.json`, from
- *   libraries.excalidraw.com (github.com/excalidraw/excalidraw-libraries,
- *   MIT). To add one, copy its `.excalidrawlib` there as
- *   `<kebab-case-name>.json` and list it below. The `.json` extension makes
- *   the CDN serve it compressed (a `.excalidrawlib` goes out uncompressed).
- * - Added: picked with "Browse libraries" in the editor. Only the library's
- *   URL is saved (table `shape_libraries`).
+ * Each one is a row in `shape_libraries` holding only the library's URL on
+ * libraries.excalidraw.com (MIT); the browser fetches the file itself, so
+ * libraries never take database space. Rows come from "Browse libraries"
+ * in the editor, plus 15 defaults seeded by a migration, and are removed
+ * on the Shape libraries page.
  */
-export const BUNDLED_LIBRARIES = [
-  "architecture-diagram-components",
-  "awesome-icons",
-  "aws-architecture-icons",
-  "cloud",
-  "computers",
-  "data-viz",
-  "decision-flow-control",
-  "dev-ops",
-  "drwnio",
-  "forms",
-  "lo-fi-wireframing-kit",
-  "software-architecture",
-  "stick-figures",
-  "system-design",
-  "systems-design-components",
-] as const;
-
-/** Changes whenever a bundled file does (computed in next.config.ts). */
-const LIBRARIES_VERSION = process.env.NEXT_PUBLIC_LIBRARIES_VERSION ?? "dev";
-
-export function bundledLibraryUrl(name: string): string {
-  // The version keeps the year-long browser cache from serving a stale file.
-  return `/libraries/${name}.json?v=${LIBRARIES_VERSION}`;
-}
-
 const LIBRARY_HOST = "libraries.excalidraw.com";
 const LIBRARY_REPO = "/excalidraw/excalidraw-libraries/";
 
