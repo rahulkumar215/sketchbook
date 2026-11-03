@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A folder. Folders nest: parentId points at the folder it lives in
+/// (null = top level).
+model Folder {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  parentId  String?   @map("parent_id") @db.Uuid
+  parent    Folder?   @relation("FolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Folder[]  @relation("FolderTree")
+  drawings  Drawing[]
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([parentId])
+  @@map("folders")
+}
+
+/// One Excalidraw scene. Images are NOT stored here (see DrawingFile) so the
+/// scene stays small and loads in one request.
+model Drawing {
+  id        String        @id @default(uuid()) @db.Uuid
+  title     String
+  folderId  String?       @map("folder_id") @db.Uuid
+  folder    Folder?       @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags      String[]      @default([])
+  elements  Json          @default("[]")
+  appState  Json          @default("{}") @map("app_state")
+  files     DrawingFile[]
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([folderId])
+  @@index([updatedAt])
+  @@map("drawings")
+}
+
+/// An image pasted into a drawing, stored as a (compressed) data URL.
+/// `id` is Excalidraw's own file id, unique within its drawing.
+model DrawingFile {
+  drawingId String   @map("drawing_id") @db.Uuid
+  drawing   Drawing  @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  id        String
+  mimeType  String   @map("mime_type")
+  dataUrl   String   @map("data_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([drawingId, id])
+  @@map("drawing_files")
+}
