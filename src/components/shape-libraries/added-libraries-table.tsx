@@ -47,7 +47,7 @@ export function AddedLibrariesTable({ libraries, onRemove }: Props) {
               </TableCell>
               <TableCell className="text-right">
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="sm"
                   onClick={() => setRemoving(library)}
                   aria-label={`Remove ${library.name}`}
