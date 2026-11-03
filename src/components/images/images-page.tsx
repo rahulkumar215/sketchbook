@@ -6,7 +6,7 @@ import { ImageGrid } from "./image-grid";
 import type { ImageItem } from "./image-tile";
 import { ImageViewer } from "./image-viewer";
 import { useLibrary } from "@/components/library/library-context";
-import { TagFilter } from "@/components/library/tag-filter";
+import { ActiveTags, TagFilter } from "@/components/library/tag-filter";
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -32,7 +32,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, toErrorMessage } from "@/lib/client-api";
 import { flattenTree } from "@/lib/folder-tree";
-import { ALL, allTags, filterDrawings, UNFILED } from "@/lib/library-filter";
+import { ALL, filterDrawings, tagCounts, UNFILED } from "@/lib/library-filter";
 import type { GalleryImage } from "@/lib/types";
 
 type Load =
@@ -109,7 +109,7 @@ export function ImagesPage() {
   // Only offer tags of drawings that actually hold images.
   const tagList = useMemo(() => {
     const withImages = new Set(images.map((i) => i.drawingId));
-    return allTags(library.drawings.filter((d) => withImages.has(d.id)));
+    return tagCounts(library.drawings.filter((d) => withImages.has(d.id)));
   }, [images, library.drawings]);
 
   // Filter drawings exactly like the library page, then keep their images.
@@ -162,32 +162,42 @@ export function ImagesPage() {
               aria-label="Search images by drawing"
             />
           </InputGroup>
-          <Select
-            value={folder}
-            onValueChange={(next) => {
-              // Radix fires "" when the value matches no item: ignore it.
-              if (next) filterWith(setFolder)(next);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-48" aria-label="Folder">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={ALL}>All folders</SelectItem>
-                <SelectItem value={UNFILED}>Unfiled</SelectItem>
-                {flattenTree(library.tree).map((f) => (
-                  <SelectItem key={f.id} value={f.id}>
-                    <span style={{ paddingLeft: `${f.depth * 12}px` }}>
-                      {f.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select
+              value={folder}
+              onValueChange={(next) => {
+                // Radix fires "" when the value matches no item: ignore it.
+                if (next) filterWith(setFolder)(next);
+              }}
+            >
+              <SelectTrigger
+                className="flex-1 sm:w-48 sm:flex-none"
+                aria-label="Folder"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={ALL}>All folders</SelectItem>
+                  <SelectItem value={UNFILED}>Unfiled</SelectItem>
+                  {flattenTree(library.tree).map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      <span style={{ paddingLeft: `${f.depth * 12}px` }}>
+                        {f.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <TagFilter
+              tags={tagList}
+              value={tags}
+              onChange={filterWith(setTags)}
+            />
+          </div>
         </div>
-        <TagFilter tags={tagList} value={tags} onChange={filterWith(setTags)} />
+        <ActiveTags value={tags} onChange={filterWith(setTags)} />
 
         {load.status === "error" ? (
           <Alert variant="destructive">

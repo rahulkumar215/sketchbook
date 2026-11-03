@@ -23,5 +23,7 @@ export function timeAgo(iso: string, now = Date.now()): string {
 export function formatBytes(bytes: number): string {
   if (bytes <= 0) return "0 KB";
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 ** 3) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  // "1 GB", "1.5 GB" (no trailing ".0")
+  return `${Number((bytes / 1024 ** 3).toFixed(1))} GB`;
 }

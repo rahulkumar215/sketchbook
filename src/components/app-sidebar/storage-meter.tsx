@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { formatBytes } from "@/lib/format";
 import { STORAGE_LIMIT_BYTES } from "@/lib/types";
 
-/** Compact "x MB of 512 MB" meter; links to the full usage dashboard. */
+/** Compact "x MB / 1 GB" meter; links to the full usage dashboard. */
 export function StorageMeter() {
   const { storageBytes, loaded } = useLibrary();
   const percent = Math.min(100, (storageBytes / STORAGE_LIMIT_BYTES) * 100);

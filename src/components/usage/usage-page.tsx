@@ -78,7 +78,7 @@ export function UsagePage() {
     <>
       <PageHeader
         title="Storage & usage"
-        description="How much of the free 0.5 GB your notes use, and what uses it."
+        description="How much of the free 1 GB your notes use, and what uses it."
         actions={
           <Button
             variant="outline"

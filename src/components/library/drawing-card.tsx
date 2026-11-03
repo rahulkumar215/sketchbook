@@ -2,7 +2,7 @@
 
 import { ExternalLink, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { CardTags } from "./card-tags";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,18 +101,12 @@ export function DrawingCard({
         </CardAction>
       </CardHeader>
       {drawing.tags.length > 0 ? (
-        <CardContent className="relative flex flex-wrap gap-1">
-          {drawing.tags.map((tag) => (
-            <Badge
-              key={tag}
-              asChild
-              variant={activeTags.includes(tag) ? "default" : "secondary"}
-            >
-              <button type="button" onClick={() => onTagClick(tag)}>
-                #{tag}
-              </button>
-            </Badge>
-          ))}
+        <CardContent className="relative">
+          <CardTags
+            tags={drawing.tags}
+            activeTags={activeTags}
+            onTagClick={onTagClick}
+          />
         </CardContent>
       ) : null}
     </Card>

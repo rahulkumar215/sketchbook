@@ -1,7 +1,8 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
+import { TagChip } from "./tag-chip";
 import { Badge } from "@/components/ui/badge";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 
@@ -74,21 +75,5 @@ export function TagInput({ id, value, suggestions, invalid, onChange }: Props) {
         </div>
       ) : null}
     </div>
-  );
-}
-
-function TagChip({ tag, onRemove }: { tag: string; onRemove: () => void }) {
-  return (
-    <Badge className="pr-0.5">
-      {tag}
-      <button
-        type="button"
-        aria-label={`Remove tag ${tag}`}
-        onClick={onRemove}
-        className="inline-flex size-4 items-center justify-center opacity-70 hover:bg-primary-foreground/20 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-1 focus-visible:outline-primary-foreground"
-      >
-        <X className="size-3" />
-      </button>
-    </Badge>
   );
 }

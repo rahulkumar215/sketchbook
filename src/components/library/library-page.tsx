@@ -6,7 +6,7 @@ import { DrawingCard } from "./drawing-card";
 import { EditDrawingDialog } from "./edit-drawing-dialog";
 import { useLibraryActions } from "./library-actions";
 import { useLibrary } from "./library-context";
-import { TagFilter } from "./tag-filter";
+import { ActiveTags, TagFilter } from "./tag-filter";
 import { useSelection } from "./use-selection";
 import { ConfirmDeleteDialog } from "@/components/forms/confirm-delete-dialog";
 import { PageHeader } from "@/components/page-header";
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { flattenTree, folderPath } from "@/lib/folder-tree";
-import { ALL, allTags, filterDrawings, UNFILED } from "@/lib/library-filter";
+import { ALL, filterDrawings, tagCounts, UNFILED } from "@/lib/library-filter";
 import type { LibraryDrawing } from "@/lib/types";
 
 const GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3";
@@ -75,7 +75,7 @@ export function LibraryPage() {
   const [editing, setEditing] = useState<LibraryDrawing | null>(null);
   const [deleting, setDeleting] = useState<LibraryDrawing | null>(null);
 
-  const tagList = useMemo(() => allTags(drawings), [drawings]);
+  const tagList = useMemo(() => tagCounts(drawings), [drawings]);
   const visible = filterDrawings({
     drawings,
     folders,
@@ -108,18 +108,23 @@ export function LibraryPage() {
         }
       />
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        <InputGroup>
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Search ${drawings.length} drawings by title or tag`}
-            aria-label="Search drawings"
-          />
-        </InputGroup>
-        <TagFilter tags={tagList} value={tags} onChange={setTags} />
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <InputGroup className="flex-1">
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`Search ${drawings.length} drawings by title or tag`}
+                aria-label="Search drawings"
+              />
+            </InputGroup>
+            <TagFilter tags={tagList} value={tags} onChange={setTags} />
+          </div>
+          <ActiveTags value={tags} onChange={setTags} />
+        </div>
 
         {!loaded ? <LoadingGrid /> : null}
         {loaded && visible.length === 0 ? (
@@ -147,7 +152,7 @@ export function LibraryPage() {
       <EditDrawingDialog
         drawing={editing}
         folderOptions={flattenTree(tree)}
-        tagSuggestions={tagList}
+        tagSuggestions={tagList.map((t) => t.tag)}
         onSave={actions.saveDrawing}
         onOpenChange={(open) => {
           if (!open) setEditing(null);

@@ -51,8 +51,8 @@ export type UsageData = {
   growth: { date: string; bytes: number }[];
 };
 
-/** Neon's free plan allows 0.5 GB of storage per project. */
-export const STORAGE_LIMIT_BYTES = 512 * 1024 * 1024;
+/** Neon's free plan allows 1 GB of storage per project (since 2026). */
+export const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
 
 /** One stored image, without its data (that is fetched per tile). */
 export type GalleryImage = {

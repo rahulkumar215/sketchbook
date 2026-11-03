@@ -47,6 +47,15 @@ export function filterDrawings(input: FilterInput): LibraryDrawing[] {
   });
 }
 
-export function allTags(drawings: LibraryDrawing[]): string[] {
-  return [...new Set(drawings.flatMap((d) => d.tags))].sort();
+export type TagCount = { tag: string; count: number };
+
+/** Every tag with how many drawings carry it: most used first, then A-Z. */
+export function tagCounts(drawings: LibraryDrawing[]): TagCount[] {
+  const counts = new Map<string, number>();
+  for (const tag of drawings.flatMap((d) => d.tags)) {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  return [...counts]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
