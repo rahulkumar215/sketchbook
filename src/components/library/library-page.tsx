@@ -1,13 +1,15 @@
 "use client";
 
 import { FolderSearch, Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DrawingCard } from "./drawing-card";
 import { EditDrawingDialog } from "./edit-drawing-dialog";
+import { FolderSelect } from "./folder-select";
 import { useLibraryActions } from "./library-actions";
 import { useLibrary } from "./library-context";
 import { ActiveTags, TagFilter } from "./tag-filter";
-import { useSelection } from "./use-selection";
+import { selectionHref, useSelection } from "./use-selection";
 import { ConfirmDeleteDialog } from "@/components/forms/confirm-delete-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,7 @@ export function LibraryPage() {
   const { loaded, folders, drawings, tree } = useLibrary();
   const actions = useLibraryActions();
   const selection = useSelection();
+  const router = useRouter();
   const heading = useHeading(selection);
   const [search, setSearch] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -109,8 +112,8 @@ export function LibraryPage() {
       />
       <div className="flex flex-col gap-4 p-4 md:p-6">
         <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <InputGroup className="flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <InputGroup className="sm:flex-1">
               <InputGroupAddon>
                 <Search />
               </InputGroupAddon>
@@ -121,7 +124,14 @@ export function LibraryPage() {
                 aria-label="Search drawings"
               />
             </InputGroup>
-            <TagFilter tags={tagList} value={tags} onChange={setTags} />
+            <div className="flex gap-2">
+              <FolderSelect
+                tree={tree}
+                value={selection}
+                onChange={(next) => router.push(selectionHref(next))}
+              />
+              <TagFilter tags={tagList} value={tags} onChange={setTags} />
+            </div>
           </div>
           <ActiveTags value={tags} onChange={setTags} />
         </div>
@@ -137,7 +147,10 @@ export function LibraryPage() {
                 key={d.id}
                 drawing={d}
                 folderLabel={
-                  selection === ALL ? folderPath(folders, d.folderId) : ""
+                  // the selected folder is in the heading; name any other
+                  d.folderId === selection
+                    ? ""
+                    : folderPath(folders, d.folderId)
                 }
                 activeTags={tags}
                 onEdit={() => setEditing(d)}

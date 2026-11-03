@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ImageGrid } from "./image-grid";
 import type { ImageItem } from "./image-tile";
 import { ImageViewer } from "./image-viewer";
+import { FolderSelect } from "@/components/library/folder-select";
 import { useLibrary } from "@/components/library/library-context";
 import { ActiveTags, TagFilter } from "@/components/library/tag-filter";
 import { PageHeader } from "@/components/page-header";
@@ -21,18 +22,9 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, toErrorMessage } from "@/lib/client-api";
-import { flattenTree } from "@/lib/folder-tree";
-import { ALL, filterDrawings, tagCounts, UNFILED } from "@/lib/library-filter";
+import { ALL, filterDrawings, tagCounts } from "@/lib/library-filter";
 import type { GalleryImage } from "@/lib/types";
 
 type Load =
@@ -163,33 +155,11 @@ export function ImagesPage() {
             />
           </InputGroup>
           <div className="flex gap-2">
-            <Select
+            <FolderSelect
+              tree={library.tree}
               value={folder}
-              onValueChange={(next) => {
-                // Radix fires "" when the value matches no item: ignore it.
-                if (next) filterWith(setFolder)(next);
-              }}
-            >
-              <SelectTrigger
-                className="flex-1 sm:w-48 sm:flex-none"
-                aria-label="Folder"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value={ALL}>All folders</SelectItem>
-                  <SelectItem value={UNFILED}>Unfiled</SelectItem>
-                  {flattenTree(library.tree).map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      <span style={{ paddingLeft: `${f.depth * 12}px` }}>
-                        {f.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              onChange={filterWith(setFolder)}
+            />
             <TagFilter
               tags={tagList}
               value={tags}
