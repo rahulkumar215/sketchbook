@@ -17,7 +17,7 @@ export function bytesTooltip(config: ChartConfig) {
       <div className="flex w-full items-center gap-2">
         <span
           aria-hidden
-          className="size-2.5 shrink-0 rounded-[2px]"
+          className="size-2.5 shrink-0"
           style={{ background: item.color }}
         />
         <span className="text-muted-foreground">

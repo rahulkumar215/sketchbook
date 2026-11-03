@@ -18,11 +18,11 @@ import type { UsageData } from "@/lib/types";
 function DashboardSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2" aria-busy="true">
-      <Skeleton className="h-48 rounded-xl" />
-      <Skeleton className="h-48 rounded-xl" />
-      <Skeleton className="h-40 rounded-xl lg:col-span-2" />
-      <Skeleton className="h-80 rounded-xl" />
-      <Skeleton className="h-80 rounded-xl" />
+      <Skeleton className="h-48" />
+      <Skeleton className="h-48" />
+      <Skeleton className="h-40 lg:col-span-2" />
+      <Skeleton className="h-80" />
+      <Skeleton className="h-80" />
     </div>
   );
 }

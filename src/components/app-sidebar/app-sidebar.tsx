@@ -34,7 +34,7 @@ export function AppSidebar() {
                   width={32}
                   height={32}
                   unoptimized
-                  className="size-8 shrink-0 rounded-md border"
+                  className="size-8 shrink-0"
                 />
                 <span className="flex flex-col leading-tight">
                   <span className="text-sm font-semibold">Sketchbook</span>

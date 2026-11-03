@@ -89,7 +89,7 @@ export function BreakdownChart({
             <li key={kind} className="flex items-start gap-2">
               <span
                 aria-hidden
-                className="mt-1 size-2.5 shrink-0 rounded-[2px]"
+                className="mt-1 size-2.5 shrink-0"
                 style={{ background: KIND_CONFIG[kind].color }}
               />
               <span className="flex flex-col">

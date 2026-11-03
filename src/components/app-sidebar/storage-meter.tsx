@@ -14,7 +14,7 @@ export function StorageMeter() {
   return (
     <Link
       href="/usage"
-      className="flex flex-col gap-2 rounded-lg border bg-background p-3 text-xs hover:bg-sidebar-accent group-data-[collapsible=icon]:hidden"
+      className="flex flex-col gap-2 border bg-background p-3 text-xs hover:bg-sidebar-accent group-data-[collapsible=icon]:hidden"
     >
       <div className="flex justify-between gap-2">
         <span className="text-muted-foreground">Storage</span>

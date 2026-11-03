@@ -53,3 +53,18 @@ export type UsageData = {
 
 /** Neon's free plan allows 0.5 GB of storage per project. */
 export const STORAGE_LIMIT_BYTES = 512 * 1024 * 1024;
+
+/** One stored image, without its data (that is fetched per tile). */
+export type GalleryImage = {
+  drawingId: string;
+  fileId: string;
+  mimeType: string;
+  /** Decoded size, approximated from the base64 length. */
+  bytes: number;
+  createdAt: string;
+};
+
+/** URL that serves an image's raw bytes, for <img src>. */
+export function imageSrc(image: Pick<GalleryImage, "drawingId" | "fileId">) {
+  return `/api/images/${image.drawingId}/${encodeURIComponent(image.fileId)}`;
+}

@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +12,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 import { loginSchema, type LoginValues } from "@/lib/validators";
 
@@ -36,6 +43,7 @@ async function postLogin(values: LoginValues): Promise<string | null> {
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
+  const [visible, setVisible] = useState(false);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { password: "" },
@@ -60,14 +68,26 @@ export function LoginForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                {...field}
-                id="password"
-                type="password"
-                autoFocus
-                autoComplete="current-password"
-                aria-invalid={fieldState.invalid}
-              />
+              <InputGroup>
+                <InputGroupInput
+                  {...field}
+                  id="password"
+                  type={visible ? "text" : "password"}
+                  autoFocus
+                  autoComplete="current-password"
+                  aria-invalid={fieldState.invalid}
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label={visible ? "Hide password" : "Show password"}
+                    aria-pressed={visible}
+                    onClick={() => setVisible((v) => !v)}
+                  >
+                    {visible ? <EyeOff /> : <Eye />}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
               {fieldState.invalid ? (
                 <FieldError errors={[fieldState.error]} />
               ) : null}

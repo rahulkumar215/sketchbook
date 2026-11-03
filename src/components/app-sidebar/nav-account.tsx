@@ -46,7 +46,7 @@ export function NavAccount() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground">
+              <span className="flex size-8 shrink-0 items-center justify-center bg-sidebar-accent text-sidebar-accent-foreground">
                 <UserRound />
               </span>
               <span className="flex flex-col text-left leading-tight">

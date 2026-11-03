@@ -62,7 +62,7 @@ export function FolderRow({
   const drop = useDropTarget((item) => {
     if (item.id !== node.id) void moveItem(item, node.id);
   });
-  const Icon = active ? FolderOpen : Folder;
+  const Icon = active || (hasChildren && open) ? FolderOpen : Folder;
 
   function handleClick() {
     // Clicking the open folder again collapses/expands it.
@@ -82,19 +82,22 @@ export function FolderRow({
           draggable
           onDragStart={(e) => setDragItem(e, { kind: "folder", id: node.id })}
           onClick={handleClick}
-          style={{ paddingLeft: `${8 + depth * 14}px` }}
+          // Top-level folders line up with "All drawings"; each level of
+          // nesting indents by one icon width.
+          style={depth > 0 ? { paddingLeft: `${8 + depth * 16}px` } : undefined}
           {...drop.handlers}
         >
-          <ChevronRight
-            aria-hidden
-            className={cn(
-              "transition-transform",
-              open && "rotate-90",
-              !hasChildren && "invisible",
-            )}
-          />
           <Icon />
-          <span>{node.name}</span>
+          <span className="truncate">{node.name}</span>
+          {hasChildren ? (
+            <ChevronRight
+              aria-hidden
+              className={cn(
+                "size-3! shrink-0 text-muted-foreground transition-transform",
+                open && "rotate-90",
+              )}
+            />
+          ) : null}
         </Link>
       </SidebarMenuButton>
       <SidebarMenuBadge className="right-7">{count}</SidebarMenuBadge>
@@ -109,6 +112,7 @@ export function FolderRow({
         <DropdownMenuContent
           side={isMobile ? "bottom" : "right"}
           align={isMobile ? "end" : "start"}
+          className="w-48"
         >
           <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => onCommand("add-child", node)}>

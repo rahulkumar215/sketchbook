@@ -48,7 +48,7 @@ export function DrawingCard({
       size="sm"
       draggable
       onDragStart={(e) => setDragItem(e, { kind: "drawing", id: drawing.id })}
-      className="relative transition-shadow hover:shadow-md"
+      className="relative transition-colors hover:ring-foreground/25"
     >
       <CardHeader>
         <CardTitle className="truncate">
@@ -76,7 +76,7 @@ export function DrawingCard({
                 <span className="sr-only">Actions for {drawing.title}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                   <Link href={href}>

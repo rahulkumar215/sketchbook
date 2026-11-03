@@ -20,7 +20,7 @@ export default function LoginPage() {
             width={40}
             height={40}
             unoptimized
-            className="mb-2 size-10 rounded-md border"
+            className="mb-2 size-10"
             priority
           />
           <CardTitle>Sketchbook</CardTitle>

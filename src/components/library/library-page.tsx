@@ -6,6 +6,7 @@ import { DrawingCard } from "./drawing-card";
 import { EditDrawingDialog } from "./edit-drawing-dialog";
 import { useLibraryActions } from "./library-actions";
 import { useLibrary } from "./library-context";
+import { TagFilter } from "./tag-filter";
 import { useSelection } from "./use-selection";
 import { ConfirmDeleteDialog } from "@/components/forms/confirm-delete-dialog";
 import { PageHeader } from "@/components/page-header";
@@ -23,7 +24,6 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { flattenTree, folderPath } from "@/lib/folder-tree";
 import { ALL, allTags, filterDrawings, UNFILED } from "@/lib/library-filter";
 import type { LibraryDrawing } from "@/lib/types";
@@ -41,7 +41,7 @@ function LoadingGrid() {
   return (
     <div className={GRID} aria-busy="true" aria-label="Loading drawings">
       {Array.from({ length: 6 }, (_, i) => (
-        <Skeleton key={i} className="h-24 rounded-xl" />
+        <Skeleton key={i} className="h-24" />
       ))}
     </div>
   );
@@ -119,24 +119,7 @@ export function LibraryPage() {
             aria-label="Search drawings"
           />
         </InputGroup>
-        {tagList.length > 0 ? (
-          <ToggleGroup
-            type="multiple"
-            variant="outline"
-            size="sm"
-            spacing={1}
-            value={tags}
-            onValueChange={setTags}
-            aria-label="Filter by tag"
-            className="flex-wrap justify-start"
-          >
-            {tagList.map((tag) => (
-              <ToggleGroupItem key={tag} value={tag}>
-                #{tag}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        ) : null}
+        <TagFilter tags={tagList} value={tags} onChange={setTags} />
 
         {!loaded ? <LoadingGrid /> : null}
         {loaded && visible.length === 0 ? (

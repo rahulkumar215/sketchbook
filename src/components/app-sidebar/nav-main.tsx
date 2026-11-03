@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartPie, Inbox, Layers, type LucideIcon } from "lucide-react";
+import { ChartPie, Images, Inbox, Layers, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -78,6 +78,14 @@ export function NavMain() {
             icon={Inbox}
             count={drawings.filter((d) => !d.folderId).length}
           />
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === "/images"}>
+              <Link href="/images" onClick={() => setOpenMobile(false)}>
+                <Images />
+                <span>Images</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={pathname === "/usage"}>
               <Link href="/usage" onClick={() => setOpenMobile(false)}>

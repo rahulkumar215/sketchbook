@@ -15,7 +15,7 @@ export function PageHeader({ title, description, actions }: Props) {
       <SidebarTrigger />
       <Separator
         orientation="vertical"
-        className="mr-1 data-[orientation=vertical]:h-4"
+        className="mr-1 data-vertical:h-4 data-vertical:self-center"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <h1 className="truncate text-sm font-semibold">{title}</h1>
