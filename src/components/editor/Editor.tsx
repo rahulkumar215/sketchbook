@@ -5,6 +5,7 @@ import "@excalidraw/excalidraw/index.css";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type {
   AppState,
+  BinaryFiles,
   ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
 } from "@excalidraw/excalidraw/types";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 import { EditorHeader } from "./EditorHeader";
 import { EditorSpinner } from "./EditorSpinner";
 import { useAutosave } from "./useAutosave";
+import { useBundledLibraries } from "./useBundledLibraries";
 import { useStoredImages } from "./useStoredImages";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +49,16 @@ function Canvas({ scene }: { scene: DrawingScene }) {
   const autosave = useAutosave(scene.id, scene.fileIds);
   const initialData = useMemo(() => toInitialData(scene), [scene]);
   useStoredImages(api, scene.id, scene.fileIds);
+  const loadLibrariesIfOpen = useBundledLibraries(api);
+
+  function handleChange(
+    elements: readonly ExcalidrawElement[],
+    appState: AppState,
+    files: BinaryFiles,
+  ) {
+    autosave.onChange(elements, appState, files);
+    loadLibrariesIfOpen(appState);
+  }
 
   async function handleBack() {
     await autosave.flush();
@@ -76,7 +88,7 @@ function Canvas({ scene }: { scene: DrawingScene }) {
         <Excalidraw
           initialData={initialData}
           excalidrawAPI={setApi}
-          onChange={autosave.onChange}
+          onChange={handleChange}
           name={scene.title}
           theme={resolvedTheme === "dark" ? "dark" : "light"}
           UIOptions={{ canvasActions: { loadScene: false } }}
