@@ -76,8 +76,19 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    pooled and direct connection strings.
 2. Click **Deploy with Vercel** above (or import your fork in Vercel) and
    fill in the four environment variables.
-3. Deploy. The build runs `prisma migrate deploy`, so the tables are created
-   on the first deploy and later schema changes apply automatically.
+3. Deploy. Production builds run `prisma migrate deploy`
+   (`scripts/migrate.mjs`), so the tables are created on the first deploy
+   and later schema changes apply automatically.
+
+**Preview deployments don't migrate.** Vercel builds every branch and pull
+request as a Preview, often with the same database variables as Production,
+and migrating there would apply an unmerged branch's schema to your real
+database. So Preview builds skip migrations. To have previews migrate, point
+the Preview environment at a separate database (for example a
+[Neon branch](https://neon.tech/docs/introduction/branching)) and set
+`RUN_MIGRATIONS=true` for Preview. The check relies on Vercel's `VERCEL_ENV`
+variable; if you turned off _Automatically expose System Environment
+Variables_, every build migrates.
 
 The storage meter assumes a 1 GB limit. Change `STORAGE_LIMIT_BYTES` in
 `src/lib/types.ts` to match your database plan. Check the current free-tier
