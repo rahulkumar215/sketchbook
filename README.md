@@ -24,7 +24,10 @@ It runs free on Vercel + Neon.
 ## How it works
 
 Sketchbook is a single-user app: one password (`APP_PASSWORD`) unlocks
-everything. There are no accounts or sharing.
+everything. There are no accounts or sharing. Sign-in is rate-limited per IP,
+and the app refuses to start with weak or example secrets; see
+[SECURITY.md](SECURITY.md) for the full security model and how to report a
+vulnerability.
 
 | Piece       | Where                                                                                                        |
 | ----------- | ------------------------------------------------------------------------------------------------------------ |
@@ -61,8 +64,11 @@ Open http://localhost:3000 and sign in with your `APP_PASSWORD`.
 | ---------------- | -------------------------------------------------------------------------------------------- |
 | `DATABASE_URL`   | Postgres connection string the app uses (on Neon, the **pooled** URL)                        |
 | `DIRECT_URL`     | Non-pooled connection string for Prisma migrations (on any other Postgres, same as above)    |
-| `APP_PASSWORD`   | The password for signing in. Use a long one.                                                 |
+| `APP_PASSWORD`   | The password for signing in, at least 12 characters. Changing it signs out every session.    |
 | `SESSION_SECRET` | 64 hex characters that sign the login cookie (generate one with the command below the table) |
+
+The app refuses to start if either secret is missing, too short, or still the
+example value from `.env.example`.
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
