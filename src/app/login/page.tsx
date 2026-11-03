@@ -15,7 +15,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="items-start">
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt=""
             width={40}
             height={40}
