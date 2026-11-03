@@ -55,15 +55,27 @@ function pressedAControl(
   return control !== null && control !== source.element;
 }
 
-/** True if dropping `item` into `folderId` would change something valid. */
+/**
+ * True if `item` may go into `folderId` at all: anything except a folder
+ * into itself or one of its own sub-folders. The folder it is already in
+ * still counts, so hovering it can expand it to reach its sub-folders.
+ */
+export function canReach(
+  item: DragData,
+  folderId: string | null,
+  folders: LibraryFolder[],
+): boolean {
+  if (item.kind === "drawing" || folderId === null) return true;
+  return !folderAndDescendants(folders, item.id).has(folderId);
+}
+
+/** True if dropping `item` into `folderId` would actually move it. */
 export function canDrop(
   item: DragData,
   folderId: string | null,
   folders: LibraryFolder[],
 ): boolean {
-  if (item.from === folderId) return false;
-  if (item.kind === "drawing" || folderId === null) return true;
-  return !folderAndDescendants(folders, item.id).has(folderId);
+  return item.from !== folderId && canReach(item, folderId, folders);
 }
 
 /**

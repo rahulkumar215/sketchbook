@@ -1,14 +1,17 @@
 "use client";
 
 import { FolderPlus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FolderRow, type FolderCommand } from "./folder-row";
 import { TopLevelDropZone } from "./top-level-drop-zone";
+import { useCollapsedFolders } from "./use-collapsed-folders";
 import { ConfirmDeleteDialog } from "@/components/forms/confirm-delete-dialog";
 import { FolderNameDialog } from "@/components/forms/folder-name-dialog";
 import { MoveFolderDialog } from "@/components/forms/move-folder-dialog";
 import { useLibraryActions } from "@/components/library/library-actions";
 import { useLibrary } from "@/components/library/library-context";
+import { useSelection } from "@/components/library/use-selection";
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -18,7 +21,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
-import type { FolderNode } from "@/lib/folder-tree";
+import { folderAncestors, type FolderNode } from "@/lib/folder-tree";
 
 type DialogState =
   | { kind: "create"; parent: FolderNode | null }
@@ -41,11 +44,26 @@ function visibleRows(
   ]);
 }
 
+/**
+ * Keeps the open folder visible: landing on (or reloading) a folder
+ * expands the folders above it, even if they were left collapsed.
+ */
+function useRevealSelected(expand: (ids: Iterable<string>) => void) {
+  const { folders } = useLibrary();
+  const selection = useSelection();
+  const onLibrary = usePathname() === "/";
+  useEffect(() => {
+    if (onLibrary) expand(folderAncestors(folders, selection));
+  }, [onLibrary, folders, selection, expand]);
+}
+
 export function NavFolders() {
   const { loaded, tree, folders, drawings } = useLibrary();
   const actions = useLibraryActions();
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const { collapsed, toggle, expand } = useCollapsedFolders();
+  const expandOne = useCallback((id: string) => expand([id]), [expand]);
   const [dialog, setDialog] = useState<DialogState>(null);
+  useRevealSelected(expand);
 
   const counts = useMemo(() => {
     const map = new Map<string, number>();
@@ -54,15 +72,6 @@ export function NavFolders() {
     }
     return map;
   }, [drawings]);
-
-  function toggle(id: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
 
   function handleCommand(command: FolderCommand, folder: FolderNode) {
     if (command === "add-child") setDialog({ kind: "create", parent: folder });
@@ -99,6 +108,7 @@ export function NavFolders() {
                   open={!collapsed.has(node.id)}
                   count={counts.get(node.id) ?? 0}
                   onToggle={() => toggle(node.id)}
+                  onExpand={expandOne}
                   onCommand={handleCommand}
                 />
               ))}

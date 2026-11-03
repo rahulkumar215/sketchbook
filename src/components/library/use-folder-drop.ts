@@ -1,8 +1,9 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/react";
+import { pointerIntersection } from "@dnd-kit/collision";
+import { useDragOperation, useDroppable } from "@dnd-kit/react";
 import { useLibrary } from "./library-context";
-import { canDrop } from "./library-dnd";
+import { canDrop, canReach } from "./library-dnd";
 import { asDragData, type DropData } from "@/lib/dnd";
 
 type Options = {
@@ -16,21 +17,31 @@ type Options = {
 };
 
 /**
- * A drop target that moves drawings/folders into `folderId`. It refuses
- * (no highlight, no drop) anything already there, and a folder dropped
- * into itself or one of its own sub-folders.
+ * A drop target that moves drawings/folders into `folderId`.
+ * `isOver`: the pointer is on it (drives expand-on-hover).
+ * `isDropTarget`: on it AND dropping would move something (drives the
+ * highlight). The folder an item is already in is "over" but not a drop
+ * target; a folder's own sub-tree is neither.
  */
 export function useFolderDrop({ id, folderId, only, disabled }: Options) {
   const { folders } = useLibrary();
+  const { source } = useDragOperation();
   const data: DropData = { folderId };
-  return useDroppable({
+  const { ref, isDropTarget: isOver } = useDroppable({
     id,
     data,
     disabled,
-    accept: (source) => {
-      const item = asDragData(source.data);
+    // Only the folder under the pointer. The default also counts any target
+    // the dragged card's rectangle overlaps, and a 460px card overlaps
+    // several rows: a drop beside the folders still landed in one.
+    collisionDetector: pointerIntersection,
+    accept: (dragged) => {
+      const item = asDragData(dragged.data);
       if (!item || (only && item.kind !== only)) return false;
-      return canDrop(item, folderId, folders);
+      return canReach(item, folderId, folders);
     },
   });
+  const item = asDragData(source?.data);
+  const movesHere = item !== null && canDrop(item, folderId, folders);
+  return { ref, isOver, isDropTarget: isOver && movesHere };
 }

@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useFolderDrop } from "@/components/library/use-folder-drop";
 import {
@@ -52,12 +53,34 @@ function useFolderDrag(node: FolderNode) {
   });
 }
 
+/** How long a drag must rest on a collapsed folder before it opens. */
+const EXPAND_DELAY_MS = 500;
+
+/**
+ * Opens a collapsed folder when a drag rests on it, so its sub-folders
+ * can be reached without letting go, as file managers do.
+ */
+function useExpandOnHover(
+  folderId: string,
+  over: boolean,
+  closed: boolean,
+  onExpand: (id: string) => void,
+) {
+  useEffect(() => {
+    if (!over || !closed) return;
+    const timer = setTimeout(() => onExpand(folderId), EXPAND_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [folderId, over, closed, onExpand]);
+}
+
 type Props = {
   node: FolderNode;
   depth: number;
   open: boolean;
   count: number;
   onToggle: () => void;
+  /** Must be stable (useCallback): a new one restarts the hover timer. */
+  onExpand: (id: string) => void;
   onCommand: (command: FolderCommand, node: FolderNode) => void;
 };
 
@@ -68,16 +91,22 @@ export function FolderRow({
   open,
   count,
   onToggle,
+  onExpand,
   onCommand,
 }: Props) {
   const { setOpenMobile, isMobile } = useSidebar();
   const active = useIsSelected(node.id);
   const hasChildren = node.children.length > 0;
   const { ref: dragRef, isDragSource } = useFolderDrag(node);
-  const { ref: dropRef, isDropTarget } = useFolderDrop({
+  const {
+    ref: dropRef,
+    isOver,
+    isDropTarget,
+  } = useFolderDrop({
     id: `into:${node.id}`,
     folderId: node.id,
   });
+  useExpandOnHover(node.id, isOver, hasChildren && !open, onExpand);
   const Icon = active || (hasChildren && open) ? FolderOpen : Folder;
 
   function handleClick() {

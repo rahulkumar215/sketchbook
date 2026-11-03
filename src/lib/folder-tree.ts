@@ -40,6 +40,22 @@ export function folderAndDescendants(
   return ids;
 }
 
+/** Ids of the folders that contain this one, nearest first. */
+export function folderAncestors(
+  folders: LibraryFolder[],
+  folderId: string,
+): string[] {
+  const parentOf = new Map(folders.map((f) => [f.id, f.parentId]));
+  const ids: string[] = [];
+  let current = parentOf.get(folderId) ?? null;
+  // the cap guards against a parent cycle in bad data
+  while (current && ids.length < 50) {
+    ids.push(current);
+    current = parentOf.get(current) ?? null;
+  }
+  return ids;
+}
+
 /** "Work / Clients / Acme" for a folder id. */
 export function folderPath(
   folders: LibraryFolder[],
