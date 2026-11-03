@@ -8,7 +8,7 @@
     "build": "prisma generate && node scripts/migrate.mjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "db:migrate": "prisma migrate dev",
     "postinstall": "prisma generate"

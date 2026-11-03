@@ -1,5 +1,7 @@
 # Sketchbook
 
+[![CI](https://github.com/rahulkumar215/sketchbook/actions/workflows/ci.yml/badge.svg)](https://github.com/rahulkumar215/sketchbook/actions/workflows/ci.yml)
+
 A self-hosted notebook for [Excalidraw](https://excalidraw.com) drawings.
 Keep your sketches, diagrams and visual notes in your own Postgres database,
 organised in nested folders with tags and search, behind a single password.
@@ -43,7 +45,7 @@ TanStack Query · dnd-kit · zod · jose.
 
 ## Run locally
 
-You need Node.js 20.9 or newer and a PostgreSQL database. Any Postgres works:
+You need Node.js 22 or newer and a PostgreSQL database. Any Postgres works:
 Neon URLs use Neon's serverless driver, anything else uses the standard `pg`
 driver (`src/lib/db.ts`).
 

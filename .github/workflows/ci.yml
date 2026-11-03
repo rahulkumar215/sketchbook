@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch or PR cancels the run still in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Format, types, lint, migrations, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # A throwaway database, so the migrations are tested on an empty one.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sketchbook
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sketchbook
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/sketchbook
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22 # the minimum in package.json "engines"
+          cache: npm
+
+      # postinstall runs `prisma generate`
+      - run: npm ci
+
+      - name: Formatting
+        run: npx prettier --check .
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Migrations apply to an empty database
+        run: npx prisma migrate deploy
+
+      # Fails when schema.prisma was changed without a matching migration
+      # (run `npm run db:migrate -- --name what_changed` to create one).
+      - name: Migrations match schema.prisma
+        run: >-
+          npx prisma migrate diff
+          --from-config-datasource
+          --to-schema prisma/schema.prisma
+          --exit-code
+
+      # `next build` directly: `npm run build` would run the migrations again.
+      - name: Build
+        run: npx next build
