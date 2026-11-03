@@ -3,8 +3,10 @@
 import { FolderPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FolderRow, type FolderCommand } from "./folder-row";
+import { TopLevelDropZone } from "./top-level-drop-zone";
 import { ConfirmDeleteDialog } from "@/components/forms/confirm-delete-dialog";
 import { FolderNameDialog } from "@/components/forms/folder-name-dialog";
+import { MoveFolderDialog } from "@/components/forms/move-folder-dialog";
 import { useLibraryActions } from "@/components/library/library-actions";
 import { useLibrary } from "@/components/library/library-context";
 import {
@@ -20,7 +22,7 @@ import type { FolderNode } from "@/lib/folder-tree";
 
 type DialogState =
   | { kind: "create"; parent: FolderNode | null }
-  | { kind: "rename" | "delete"; folder: FolderNode }
+  | { kind: "move" | "rename" | "delete"; folder: FolderNode }
   | null;
 
 type Row = { node: FolderNode; depth: number };
@@ -40,7 +42,7 @@ function visibleRows(
 }
 
 export function NavFolders() {
-  const { loaded, tree, drawings } = useLibrary();
+  const { loaded, tree, folders, drawings } = useLibrary();
   const actions = useLibraryActions();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -101,6 +103,7 @@ export function NavFolders() {
                 />
               ))}
         </SidebarMenu>
+        <TopLevelDropZone />
         {loaded && tree.length === 0 ? (
           <p className="px-2 py-1 text-xs text-muted-foreground">
             No folders yet. Create one, then drag drawings onto it.
@@ -127,6 +130,14 @@ export function NavFolders() {
             name,
             dialog?.kind === "create" ? (dialog.parent?.id ?? null) : null,
           )
+        }
+      />
+      <MoveFolderDialog
+        folder={dialog?.kind === "move" ? dialog.folder : null}
+        folders={folders}
+        onOpenChange={close}
+        onMove={(id, parentId) =>
+          actions.moveItem({ kind: "folder", id }, parentId)
         }
       />
       <FolderNameDialog

@@ -11,9 +11,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useDropTarget } from "./use-drop-target";
-import { useLibraryActions } from "@/components/library/library-actions";
 import { useLibrary } from "@/components/library/library-context";
+import { useFolderDrop } from "@/components/library/use-folder-drop";
 import {
   selectionHref,
   useIsSelected,
@@ -36,24 +35,33 @@ type RootItemProps = {
   count: number;
 };
 
-/** "All drawings" / "Unfiled". Dropping here moves things to the top level. */
+/**
+ * "All drawings" / "Unfiled". Dropping a drawing on Unfiled takes it out of
+ * its folder; folders go to the top level via the zone under the folders.
+ */
 function RootItem({ selection, label, icon: Icon, count }: RootItemProps) {
-  const { moveItem } = useLibraryActions();
   const { setOpenMobile } = useSidebar();
   const active = useIsSelected(selection);
-  const drop = useDropTarget((item) => void moveItem(item, null));
+  const { ref: dropRef, isDropTarget } = useFolderDrop({
+    id: `root:${selection}`,
+    folderId: null,
+    only: "drawing",
+    disabled: selection !== UNFILED,
+  });
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={dropRef}>
       <SidebarMenuButton
         asChild
         isActive={active}
-        className={cn(drop.dropping && "ring-2 ring-sidebar-ring")}
+        className={cn(
+          isDropTarget && "bg-sidebar-accent ring-2 ring-sidebar-ring",
+        )}
       >
         <Link
           href={selectionHref(selection)}
+          draggable={false}
           onClick={() => setOpenMobile(false)}
-          {...drop.handlers}
         >
           <Icon />
           <span>{label}</span>

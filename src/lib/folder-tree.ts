@@ -55,13 +55,25 @@ export function folderPath(
   return parts.join(" / ");
 }
 
+export type FolderChoice = {
+  id: string;
+  name: string;
+  depth: number;
+  /** "Frontend / Performance": shown once picked. */
+  path: string;
+};
+
 /** Depth-first list of folders with their nesting depth, for <select>s. */
 export function flattenTree(
   tree: FolderNode[],
   depth = 0,
-): { id: string; name: string; depth: number }[] {
-  return tree.flatMap((node) => [
-    { id: node.id, name: node.name, depth },
-    ...flattenTree(node.children, depth + 1),
-  ]);
+  parentPath = "",
+): FolderChoice[] {
+  return tree.flatMap((node) => {
+    const path = parentPath ? `${parentPath} / ${node.name}` : node.name;
+    return [
+      { id: node.id, name: node.name, depth, path },
+      ...flattenTree(node.children, depth + 1, path),
+    ];
+  });
 }

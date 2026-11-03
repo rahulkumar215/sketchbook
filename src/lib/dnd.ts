@@ -1,33 +1,41 @@
-/** Drag-and-drop payloads: drawings and folders can be dropped on folders. */
+/**
+ * Drag-and-drop payloads (@dnd-kit/react): drawings and folders are dragged
+ * onto folders, "Unfiled" or the sidebar's "top level" zone.
+ */
 
 export type DragItem = { kind: "drawing" | "folder"; id: string };
 
-const MIME = "application/x-sketchbook";
+/** What a draggable carries: the item, where it is now, a preview label. */
+export type DragData = DragItem & {
+  /** Current folder (drawing) or parent (folder); null = top level. */
+  from: string | null;
+  label: string;
+};
 
-export function setDragItem(e: React.DragEvent, item: DragItem) {
-  e.dataTransfer.setData(MIME, JSON.stringify(item));
-  e.dataTransfer.effectAllowed = "move";
+/** What a drop target carries: the folder it moves into (null = top). */
+export type DropData = { folderId: string | null };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-export function hasDragItem(e: React.DragEvent): boolean {
-  return e.dataTransfer.types.includes(MIME);
+function idOrNull(value: unknown): string | null | undefined {
+  if (value === null || typeof value === "string") return value;
+  return undefined;
 }
 
-export function getDragItem(e: React.DragEvent): DragItem | null {
-  try {
-    const parsed: unknown = JSON.parse(e.dataTransfer.getData(MIME));
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "kind" in parsed &&
-      "id" in parsed &&
-      (parsed.kind === "drawing" || parsed.kind === "folder") &&
-      typeof parsed.id === "string"
-    ) {
-      return { kind: parsed.kind, id: parsed.id };
-    }
-  } catch {
-    // not one of ours
-  }
-  return null;
+export function asDragData(data: unknown): DragData | null {
+  if (!isRecord(data)) return null;
+  const { kind, id, label } = data;
+  const from = idOrNull(data.from);
+  if (kind !== "drawing" && kind !== "folder") return null;
+  if (typeof id !== "string" || typeof label !== "string") return null;
+  if (from === undefined) return null;
+  return { kind, id, from, label };
+}
+
+export function asDropData(data: unknown): DropData | null {
+  if (!isRecord(data)) return null;
+  const folderId = idOrNull(data.folderId);
+  return folderId === undefined ? null : { folderId };
 }

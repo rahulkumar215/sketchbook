@@ -1,7 +1,9 @@
 "use client";
 
+import { useDraggable } from "@dnd-kit/react";
 import {
   ChevronRight,
+  FolderInput,
   Folder,
   FolderOpen,
   FolderPlus,
@@ -11,8 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useDropTarget } from "./use-drop-target";
-import { useLibraryActions } from "@/components/library/library-actions";
+import { useFolderDrop } from "@/components/library/use-folder-drop";
 import {
   selectionHref,
   useIsSelected,
@@ -32,10 +33,24 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { setDragItem } from "@/lib/dnd";
+import type { DragData } from "@/lib/dnd";
 import type { FolderNode } from "@/lib/folder-tree";
 
-export type FolderCommand = "add-child" | "rename" | "delete";
+export type FolderCommand = "add-child" | "move" | "rename" | "delete";
+
+/** Drag the folder by its row; the provider's overlay follows the pointer. */
+function useFolderDrag(node: FolderNode) {
+  const data: DragData = {
+    kind: "folder",
+    id: node.id,
+    from: node.parentId,
+    label: node.name,
+  };
+  return useDraggable({
+    id: `folder:${node.id}`,
+    data,
+  });
+}
 
 type Props = {
   node: FolderNode;
@@ -55,12 +70,13 @@ export function FolderRow({
   onToggle,
   onCommand,
 }: Props) {
-  const { moveItem } = useLibraryActions();
   const { setOpenMobile, isMobile } = useSidebar();
   const active = useIsSelected(node.id);
   const hasChildren = node.children.length > 0;
-  const drop = useDropTarget((item) => {
-    if (item.id !== node.id) void moveItem(item, node.id);
+  const { ref: dragRef, isDragSource } = useFolderDrag(node);
+  const { ref: dropRef, isDropTarget } = useFolderDrop({
+    id: `into:${node.id}`,
+    folderId: node.id,
   });
   const Icon = active || (hasChildren && open) ? FolderOpen : Folder;
 
@@ -71,21 +87,25 @@ export function FolderRow({
   }
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={dropRef}>
       <SidebarMenuButton
         asChild
         isActive={active}
-        className={cn(drop.dropping && "ring-2 ring-sidebar-ring")}
+        className={cn(
+          "[-webkit-touch-callout:none]",
+          isDropTarget && "bg-sidebar-accent ring-2 ring-sidebar-ring",
+          isDragSource && "opacity-50",
+        )}
       >
         <Link
+          ref={dragRef}
           href={selectionHref(node.id)}
-          draggable
-          onDragStart={(e) => setDragItem(e, { kind: "folder", id: node.id })}
+          // natively draggable links cancel dnd-kit drags
+          draggable={false}
           onClick={handleClick}
           // Top-level folders line up with "All drawings"; each level of
           // nesting indents by one icon width.
           style={depth > 0 ? { paddingLeft: `${8 + depth * 16}px` } : undefined}
-          {...drop.handlers}
         >
           <Icon />
           <span className="truncate">{node.name}</span>
@@ -118,6 +138,10 @@ export function FolderRow({
             <DropdownMenuItem onSelect={() => onCommand("add-child", node)}>
               <FolderPlus />
               New sub-folder
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onCommand("move", node)}>
+              <FolderInput />
+              Move to&hellip;
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onCommand("rename", node)}>
               <Pencil />

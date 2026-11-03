@@ -1,7 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Inbox } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
+import {
+  ChoiceLabel,
+  FolderChoiceItems,
+  folderChoiceLabel,
+} from "./folder-choices";
 import { TagInput } from "./tag-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,21 +32,23 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import type { FolderChoice } from "@/lib/folder-tree";
 import type { LibraryDrawing } from "@/lib/types";
 import { drawingDetailsSchema, type DrawingDetails } from "@/lib/validators";
 
 /** Radix Select can't hold "" as a value, so "no folder" gets a sentinel. */
 const UNFILED_VALUE = "__unfiled__";
 
-type FolderOption = { id: string; name: string; depth: number };
+const UNFILED_LABEL = { icon: Inbox, text: "Unfiled" };
 
 type Props = {
   drawing: LibraryDrawing | null;
-  folderOptions: FolderOption[];
+  folderOptions: FolderChoice[];
   tagSuggestions: string[];
   /** Resolve true to close the dialog. */
   onSave: (id: string, details: DrawingDetails) => Promise<boolean>;
@@ -124,18 +132,23 @@ function EditDrawingForm({
                   aria-invalid={fieldState.invalid}
                   className="w-full"
                 >
-                  <SelectValue />
+                  <SelectValue>
+                    {folderChoiceLabel(
+                      folderOptions,
+                      field.value ?? UNFILED_VALUE,
+                      UNFILED_LABEL,
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value={UNFILED_VALUE}>Unfiled</SelectItem>
-                    {folderOptions.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        <span style={{ paddingLeft: `${f.depth * 12}px` }}>
-                          {f.name}
-                        </span>
-                      </SelectItem>
-                    ))}
+                    <SelectItem value={UNFILED_VALUE}>
+                      <ChoiceLabel {...UNFILED_LABEL} />
+                    </SelectItem>
+                  </SelectGroup>
+                  {folderOptions.length > 0 ? <SelectSeparator /> : null}
+                  <SelectGroup>
+                    <FolderChoiceItems choices={folderOptions} />
                   </SelectGroup>
                 </SelectContent>
               </Select>

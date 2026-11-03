@@ -1,5 +1,6 @@
 "use client";
 
+import { useDraggable } from "@dnd-kit/react";
 import {
   ExternalLink,
   Folder,
@@ -28,8 +29,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { setDragItem } from "@/lib/dnd";
+import type { DragData } from "@/lib/dnd";
 import { timeAgo } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { LibraryDrawing } from "@/lib/types";
 
 type Props = {
@@ -52,12 +54,35 @@ function FolderChip({ folderId, label }: { folderId: string; label: string }) {
       variant="outline"
       className="relative max-w-1/2 min-w-0 shrink-0 font-normal"
     >
-      <Link href={selectionHref(folderId)} title={`Open folder ${label}`}>
+      <Link
+        href={selectionHref(folderId)}
+        title={`Open folder ${label}`}
+        draggable={false}
+      >
         <Folder data-icon="inline-start" />
         <span className="truncate">{label}</span>
       </Link>
     </Badge>
   );
+}
+
+/**
+ * Makes a card draggable onto sidebar folders. The card stays put (dimmed);
+ * a copy of it in the provider's DragOverlay is what follows the pointer. Keep the default
+ * feedback: `feedback: "none"` also skips measuring the drag, and with no
+ * drag shape dnd-kit detects no drop targets at all.
+ */
+function useCardDrag(drawing: LibraryDrawing) {
+  const data: DragData = {
+    kind: "drawing",
+    id: drawing.id,
+    from: drawing.folderId,
+    label: drawing.title,
+  };
+  return useDraggable({
+    id: `drawing:${drawing.id}`,
+    data,
+  });
 }
 
 /** A drawing in the library grid. Drag it onto a sidebar folder to move it. */
@@ -70,18 +95,24 @@ export function DrawingCard({
   onTagClick,
 }: Props) {
   const href = `/d/${drawing.id}`;
+  const { ref: dragRef, isDragSource } = useCardDrag(drawing);
   return (
     <Card
+      ref={dragRef}
       size="sm"
-      draggable
-      onDragStart={(e) => setDragItem(e, { kind: "drawing", id: drawing.id })}
-      className="relative transition-colors hover:ring-foreground/25"
+      className={cn(
+        // no iOS link menu on the long-press that starts a touch drag
+        "relative transition-colors [-webkit-touch-callout:none] hover:ring-foreground/25",
+        isDragSource && "opacity-50",
+      )}
     >
       <CardHeader>
         <CardTitle className="flex min-w-0 items-center gap-2">
           {/* the ::after overlay makes the whole card open the drawing */}
+          {/* draggable={false}: a natively draggable link cancels dnd-kit */}
           <Link
             href={href}
+            draggable={false}
             className="truncate after:absolute after:inset-0 after:content-['']"
           >
             {drawing.title}

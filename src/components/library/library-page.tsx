@@ -126,7 +126,7 @@ export function LibraryPage() {
             </InputGroup>
             <div className="flex gap-2">
               <FolderSelect
-                tree={tree}
+                folders={folders}
                 value={selection}
                 onChange={(next) => router.push(selectionHref(next))}
               />

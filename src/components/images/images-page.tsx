@@ -148,7 +148,7 @@ export function ImagesPage() {
           </InputGroup>
           <div className="flex gap-2">
             <FolderSelect
-              tree={library.tree}
+              folders={library.folders}
               value={folder}
               onChange={filterWith(setFolder)}
             />
