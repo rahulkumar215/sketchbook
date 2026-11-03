@@ -7,6 +7,8 @@ Keep your sketches, diagrams and visual notes in your own Postgres database,
 organised in nested folders with tags and search, behind a single password.
 It runs free on Vercel + Neon.
 
+https://github.com/user-attachments/assets/0da47a7e-f3de-4b41-8b52-2108d466077b
+
 ![The Sketchbook library in dark mode: nested folders in the sidebar and a grid of drawings with folder chips and tags](docs/screenshot-library.jpg)
 
 ## Features
